@@ -3,6 +3,7 @@ from torchvision import transforms
 import torch
 from PIL import Image
 
+
 class OCRInferenceDataset(Dataset):
 
     def __init__(self, crop_records):

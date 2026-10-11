@@ -1,32 +1,46 @@
 import pymupdf
+from PIL import Image
 
 
-def has_text_layer(page):
+MIN_TEXT_CHARS = 30
 
-    text = page.get_text("text")
 
-    return bool(text.strip())
+def has_text_layer(page, min_chars=MIN_TEXT_CHARS):
+    """True, gdy strona ma użyteczną warstwę tekstową, a nie tylko drobny
+    tekst (stopka, znak wodny) na skanie."""
+    text = page.get_text("text").strip()
+
+    if len(text) >= min_chars:
+        return True
+
+    if not text:
+        return False
+
+   
+    return not page.get_images(full=True)
 
 
 def render_page(page, scale=2.5):
-
-    matrix = pymupdf.Matrix(scale, scale)
-
     pix = page.get_pixmap(
-        matrix=matrix,
+        matrix=pymupdf.Matrix(scale, scale),
+        colorspace=pymupdf.csRGB,
         alpha=False
     )
 
-    image_bytes = pix.tobytes("png")
-
-    from PIL import Image
-    import io
-
-    image = Image.open(
-        io.BytesIO(image_bytes)
+    # bez kodowania do PNG i z powrotem
+    return Image.frombytes(
+        "RGB",
+        (pix.width, pix.height),
+        pix.samples
     )
 
-    return image
+
+def _mark_source(page_results, is_ocr):
+    """Oznacza regiony: czy pochodzą z OCR (potrzebne w format_pages, żeby
+    korekty wielkości liter nie dotykały tekstu z warstwy tekstowej PDF)."""
+    for item in page_results:
+        if isinstance(item, dict):
+            item["ocr"] = is_ocr
 
 
 def process_pdf(
@@ -39,35 +53,43 @@ def process_pdf(
     from pipeline.text_processor import process_text_page
     from pipeline.scan_processor import process_scanned_page
 
-    document = pymupdf.open(pdf_path)
-
     results = []
 
-    for page_number, page in enumerate(document, start=1):
+    with pymupdf.open(pdf_path) as document:
 
-        if has_text_layer(page):
+        total = len(document)
 
-            page_results = process_text_page(
-                page,
-                page_number
-            )
+        print(f"PDF: {pdf_path}")
+        print(f"Liczba stron: {total}")
 
-        else:
+        for page_number, page in enumerate(document, start=1):
+            print(f"Przetwarzam stronę {page_number}/{total}")
 
-            image = render_page(page)
+            if has_text_layer(page):
 
-            page_temp_dir = temp_dir / f"page_{page_number:03d}"
+                page_results = process_text_page(
+                    page,
+                    page_number
+                )
+                is_ocr = False
 
-            page_results = process_scanned_page(
-                image=image,
-                page_number=page_number,
-                temp_page_dir=page_temp_dir,
-                detector=detector,
-                recognizer=recognizer
-            )
+            else:
 
-        results.extend(page_results)
+                image = render_page(page)
 
-    document.close()
+                page_temp_dir = temp_dir / f"page_{page_number:03d}"
+
+                page_results = process_scanned_page(
+                    image=image,
+                    page_number=page_number,
+                    temp_page_dir=page_temp_dir,
+                    detector=detector,
+                    recognizer=recognizer
+                )
+                is_ocr = True
+
+            _mark_source(page_results, is_ocr)
+
+            results.extend(page_results)
 
     return results

@@ -3,11 +3,14 @@ from pathlib import Path
 from pipeline.docx_processor import process_docx
 from pipeline.pdf_processor import process_pdf
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+TEMP_DIR = PROJECT_ROOT / "temp"
+
 def process_document(
     file_path,
     detector=None,
     recognizer=None,
-    temp_dir=Path("temp")
+    temp_dir=TEMP_DIR
 ):
 
     file_path = Path(file_path)

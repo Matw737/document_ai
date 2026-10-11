@@ -31,6 +31,39 @@
 
 #     return "\n".join(output)
 
+def format_pages(regions):
+
+    pages = {}
+
+    for region in regions:
+        pages.setdefault(region.page, []).append(region)
+
+    output = []
+
+    for page in sorted(pages):
+
+        lines = group_into_lines(pages[page])
+
+        page_lines = []
+
+        for line in lines:
+
+            text = " ".join(
+                region.text.strip()
+                for region in line
+                if region.text.strip()
+            )
+
+            if text:
+                page_lines.append(text)
+
+        output.append({
+            "page": page,
+            "text": "\n".join(page_lines)
+        })
+
+    return output
+
 def group_into_lines(regions, y_threshold=0.5):
 
     lines = []
@@ -115,32 +148,20 @@ def group_into_lines(regions, y_threshold=0.5):
 
 def format_lines(regions):
 
-    pages = {}
-
-    for region in regions:
-        pages.setdefault(region.page, []).append(region)
+    pages = format_pages(regions)
 
     output = []
 
-    for page in sorted(pages):
+    for page in pages:
 
         if output:
             output.append("")
 
-        output.append(f"--- STRONA {page} ---")
+        output.append(
+            f"--- STRONA {page['page']} ---"
+        )
 
-        lines = group_into_lines(pages[page])
-
-        for line in lines:
-
-            text = " ".join(
-                region.text.strip()
-                for region in line
-                if region.text.strip()
-            )
-
-            if text:
-                output.append(text)
+        output.append(page["text"])
 
     return "\n".join(output)
 
@@ -181,3 +202,5 @@ def plot_regions(image, regions):
     ax.axis("off")
     plt.tight_layout()
     plt.show()
+
+    

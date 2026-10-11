@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from ocr.dataset import collate_fn_inference
 from ocr.recognizer import OCRRecognizer
 from schemas.output import TextRegion
+import random
 
 def save_crops(image, detections, temp_page_dir):
 

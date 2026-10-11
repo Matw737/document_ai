@@ -9,7 +9,6 @@ env/
 *.pth
 *.ckpt
 
-output/
 temp/
 
 *.pdf
