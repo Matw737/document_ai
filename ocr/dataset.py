@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 import torch
 from PIL import Image
+import torch.nn.functional as F
 
 
 class OCRInferenceDataset(Dataset):
@@ -24,47 +25,46 @@ class OCRInferenceDataset(Dataset):
 
         img = img.convert("L")
 
-        ratio = 32 / height
+        ratio = 26/ height
         new_width = round((width*ratio))
 
-        img = img.resize((new_width,32))
+        img = img.resize((new_width,26))
 
         img = transforms.ToTensor()(img)
 
         return img, index
 
 def collate_fn_inference(batch):
-
-    lengths = [
-        img.shape[-1]
-        for img,_ in batch
-    ]
+   
+    BORDER_PAD = 3
+    
+    padded_batch = []
+    lengths = []
+    
+    for img, index in batch:
+       
+        img_padded = F.pad(img, (BORDER_PAD, BORDER_PAD, BORDER_PAD, BORDER_PAD), mode='constant', value=1.0)
+        
+        padded_batch.append((img_padded, index))
+        lengths.append(img_padded.shape[-1]) 
 
     max_width = max(lengths)
-
     images = []
     indices = []
 
-    for img, index in batch:
-
+    for img, index in padded_batch:
         delta = max_width - img.shape[-1]
-
-        padding = torch.zeros(1, 32, delta, dtype=img.dtype)
-
-        img = torch.cat([img, padding], dim=2)
+        
+        if delta > 0:
+        
+            right_padding = torch.ones(1, img.shape[1], delta, dtype=img.dtype)
+            img = torch.cat([img, right_padding], dim=2)
 
         images.append(img)
         indices.append(index)
 
     images = torch.stack(images)
-
-    input_lengths = torch.tensor(
-        lengths,
-        dtype=torch.long
-    )
-    indices = torch.tensor(
-        indices,
-        dtype=torch.long
-    )
+    input_lengths = torch.tensor(lengths, dtype=torch.long)
+    indices = torch.tensor(indices, dtype=torch.long)
 
     return images, input_lengths, indices

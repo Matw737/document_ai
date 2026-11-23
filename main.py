@@ -15,23 +15,23 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "temp"
 
-def cleanup_temp(temp_dir):
+# def cleanup_temp(temp_dir):
 
-    if not temp_dir.exists():
-        return
+#     if not temp_dir.exists():
+#         return
 
-    for path in temp_dir.rglob("*"):
-        if path.is_file():
-            try:
-                path.chmod(stat.S_IWRITE)
-                path.unlink()
-            except PermissionError:
-                print(f"Nie można usunąć pliku: {path}")
+#     for path in temp_dir.rglob("*"):
+#         if path.is_file():
+#             try:
+#                 path.chmod(stat.S_IWRITE)
+#                 path.unlink()
+#             except PermissionError:
+#                 print(f"Nie można usunąć pliku: {path}")
 
-    try:
-        shutil.rmtree(temp_dir)
-    except PermissionError:
-        print(f"Nie można usunąć katalogu temp: {temp_dir}")
+    # try:
+        # shutil.rmtree(temp_dir)
+    # except PermissionError:
+        # print(f"Nie można usunąć katalogu temp: {temp_dir}")
 
 def main(file_path, output_path=None):
 
@@ -58,7 +58,7 @@ def main(file_path, output_path=None):
     )
 
     checkpoint = torch.load(
-        BASE_DIR / "models" / "ocr_v2.1_best.pt",
+        BASE_DIR / "models" / "ocr_v3.0_best.pt",
         map_location="cpu",
         weights_only=False
     )
@@ -91,8 +91,8 @@ def main(file_path, output_path=None):
         return results
 
     finally:
-        cleanup_temp(TEMP_DIR)
-
+        # cleanup_temp(TEMP_DIR)
+        pass
 
 if __name__ == "__main__":
 

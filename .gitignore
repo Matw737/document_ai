@@ -10,6 +10,9 @@ env/
 *.ckpt
 
 temp/
+output_2_1.json
+output_3_0.json
+output.json
 
 *.pdf
 

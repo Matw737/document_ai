@@ -45,21 +45,45 @@ def format_pages(regions):
         lines = group_into_lines(pages[page])
 
         page_lines = []
+        line_data = []
 
         for line in lines:
 
             text = " ".join(
                 region.text.strip()
-                for region in line
+                for region in line["regions"]
                 if region.text.strip()
             )
 
             if text:
                 page_lines.append(text)
 
+                line_data.append({
+                    "text": text,
+                    "bbox": line["bbox"],
+                    "center_y": line["center_y"],
+                    "height": line["height"]
+                })
+        for i in range(len(line_data) - 1):
+
+            current = line_data[i]
+            next_line = line_data[i + 1]
+
+            gap = next_line["bbox"][1] - current["bbox"][3]
+
+            avg_height = (
+                current["height"] + next_line["height"]
+            ) / 2
+
+            current["gap_after"] = gap
+            current["gap_ratio"] = (
+                round(gap / avg_height, 2)
+                if avg_height else 0
+            )
         output.append({
             "page": page,
-            "text": "\n".join(page_lines)
+            "text": "\n".join(page_lines),
+            "lines": line_data
         })
 
     return output
@@ -141,10 +165,14 @@ def group_into_lines(regions, y_threshold=0.5):
         for region in line["regions"]:
             region.line_id = line_id
 
-    return [
-        line["regions"]
-        for line in lines
-    ]
+        line["bbox"] = (
+            min(r.bbox[0] for r in line["regions"]),
+            min(r.bbox[1] for r in line["regions"]),
+            max(r.bbox[2] for r in line["regions"]),
+            max(r.bbox[3] for r in line["regions"])
+        )
+
+    return lines
 
 def format_lines(regions):
 

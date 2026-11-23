@@ -51,7 +51,7 @@ def process_pdf(
 ):
 
     from pipeline.text_processor import process_text_page
-    from pipeline.scan_processor import process_scanned_page
+    from pipeline.scan_processor_by_line import process_scanned_page
 
     results = []
 

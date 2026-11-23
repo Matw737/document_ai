@@ -122,7 +122,6 @@ char_to_idx_v2 = {
     for idx, char in idx_to_char_v2.items()
 }
 
-
 idx_to_char_v3 = {
     0: "<BLANK>",
     1: " ",
@@ -244,7 +243,9 @@ idx_to_char_v3 = {
 
 char_to_idx_v3 = {
     char: idx
-    for idx, char in idx_to_char_v2.items()
+    for idx, char in idx_to_char_v3.items()
 }
 idx_to_char_v3[116] = "§"
 char_to_idx_v3["§"] = 116
+idx_to_char_v3[117] = "©"
+char_to_idx_v3["©"] = 117

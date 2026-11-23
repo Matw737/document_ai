@@ -1,4 +1,4 @@
-from .model import OCRModel, OCRModelV0_1
+from .model import OCRModel, OCRModelV0_1, AttentionOCRModel
 from .decoder import greedy_decode
 import torch
 from PIL import Image
@@ -10,7 +10,7 @@ class OCRRecognizer:
         
         self.model_state = model_state
         self.device = torch.device(device if torch.cuda.is_available() else "cpu")
-        self.model = OCRModel()
+        self.model = AttentionOCRModel()
         self.model.load_state_dict(self.model_state)
         self.model.to(self.device)
         self.model.eval()
@@ -21,9 +21,9 @@ class OCRRecognizer:
 
         with torch.no_grad():
 
-            logits = self.model(x, lenghts)
+            logits, output = self.model(x, lenghts)
 
-        decoded_text = greedy_decode(logits, lenghts)
+        decoded_text = greedy_decode(logits, output, postprocess=False)
 
         return decoded_text
     
