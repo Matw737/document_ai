@@ -6,8 +6,7 @@ MIN_TEXT_CHARS = 30
 
 
 def has_text_layer(page, min_chars=MIN_TEXT_CHARS):
-    """True, gdy strona ma użyteczną warstwę tekstową, a nie tylko drobny
-    tekst (stopka, znak wodny) na skanie."""
+
     text = page.get_text("text").strip()
 
     if len(text) >= min_chars:
@@ -36,8 +35,6 @@ def render_page(page, scale=2.5):
 
 
 def _mark_source(page_results, is_ocr):
-    """Oznacza regiony: czy pochodzą z OCR (potrzebne w format_pages, żeby
-    korekty wielkości liter nie dotykały tekstu z warstwy tekstowej PDF)."""
     for item in page_results:
         if isinstance(item, dict):
             item["ocr"] = is_ocr

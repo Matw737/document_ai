@@ -1,35 +1,4 @@
-# def sort_reading_order(regions):
-#     return sorted(
-#         regions,
-#         key=lambda r: (
-#             r.page,
-#             r.bbox[1] if r.bbox else 0,
-#             r.bbox[0] if r.bbox else 0
-#         )
-#     )
 
-
-# def format_text(regions):
-
-#     regions = sort_reading_order(regions)
-
-#     output = []
-#     current_page = None
-
-#     for region in regions:
-
-#         if region.page != current_page:
-
-#             if output:
-#                 output.append("")
-
-#             output.append(f"--- STRONA {region.page} ---")
-#             current_page = region.page
-
-#         if region.text.strip():
-#             output.append(region.text.strip())
-
-#     return "\n".join(output)
 
 def format_pages(regions):
 
